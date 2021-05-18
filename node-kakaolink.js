@@ -58,7 +58,7 @@ class KakaoLink {
                 Object.assign(this.#cookies, {
                     _kadu: cookies['_kadu'],
                     _kadub: cookies['_kadub'],
-                    _maldive_oauth_webapp_session: cookies['_maldive_oauth_webapp_session'],
+                    _maldive_oauth_webapp_session_key: cookies['_maldive_oauth_webapp_session_key'],
                     TIARA: this.#getCookies(await fetch('https://track.tiara.kakao.com/queen/footsteps'))['TIARA']
                 });
 
