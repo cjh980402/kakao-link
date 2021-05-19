@@ -8,6 +8,7 @@ class KakaoLink {
     #cookies = {};
     #referer = null;
     #kakaoStatic = 'sdk/1.36.6 os/javascript lang/en-US device/Win32 origin/';
+
     constructor(apiKey, location) {
         if (apiKey.constructor != String || location.constructor != String) {
             throw new TypeError('매개변수의 타입은 String이어야 합니다.');
