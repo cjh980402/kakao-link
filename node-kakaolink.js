@@ -13,7 +13,7 @@ class KakaoLink {
             throw new TypeError('매개변수의 타입은 String이어야 합니다.');
         }
         if (apiKey.length != 32) {
-            throw new ReferenceError('API KEY는 32자여야 합니다. 올바른 API KEY를 사용했는지 확인해주세요.');
+            throw new ReferenceError('API KEY는 32자여야 합니다.');
         }
         if (!/^http(s)?\:\/\/.+/.test(location)) {
             throw new ReferenceError('도메인 주소의 형식이 올바르지 않습니다.');
@@ -30,8 +30,8 @@ class KakaoLink {
         if (password.constructor != String) {
             throw new TypeError('비밀번호의 타입은 String이어야 합니다.');
         }
-        if (this.#apiKey == null) {
-            throw new ReferenceError('로그인 메서드가 카카오 SDK가 초기화되기 전에 호출되었습니다.');
+        if (!this.#apiKey) {
+            throw new ReferenceError('로그인 메서드를 카카오 SDK가 초기화되기 전에 호출하였습니다.');
         }
 
         const form = new FormData();
@@ -48,7 +48,7 @@ class KakaoLink {
 
         switch (loginResponse.status) {
             case 401:
-                throw new ReferenceError('유효한 API KEY인지 확인해주세요.');
+                throw new ReferenceError('유효한 API KEY가 아닙니다.');
             case 200:
                 this.#referer = loginResponse.url;
                 const $ = load(await loginResponse.text());
@@ -80,12 +80,13 @@ class KakaoLink {
                     }
                 });
 
-                switch ((await response.json()).status) {
+                const jsonText = await response.text();
+                switch (JSON.parse(jsonText).status) {
                     case -450:
                         throw new ReferenceError('이메일 또는 비밀번호가 올바르지 않습니다.');
                     case -481:
                     case -484:
-                        throw new ReferenceError(await response.json());
+                        throw new ReferenceError(jsonText);
                     case 0:
                         const cookies = this.#getCookies(response);
                         Object.assign(this.#cookies, {
@@ -96,7 +97,7 @@ class KakaoLink {
                         });
                         break;
                     default:
-                        throw new Error(`로그인 도중 에러가 발생하였습니다.\n${await response.text()}`);
+                        throw new Error(`로그인 도중 에러가 발생하였습니다.\n${jsonText}`);
                 }
                 break;
             default:
@@ -123,7 +124,7 @@ class KakaoLink {
 
         switch (response.status) {
             case 400:
-                throw new ReferenceError('템플릿 객체가 올바르지 않거나, Web 플랫폼에 등록되어 있는 도메인과 현재 도메인이 일치하지 않습니다.');
+                throw new ReferenceError('템플릿 객체가 올바르지 않거나, Web 플랫폼에 등록된 도메인과 현재 도메인이 일치하지 않습니다.');
             case 200:
                 const cookies = this.#getCookies(response);
                 Object.assign(this.#cookies, {
@@ -151,7 +152,7 @@ class KakaoLink {
 
                 const chat = chats?.find((v) => v.title == room);
                 if (!chat?.id) {
-                    throw new ReferenceError(`방 이름 ${room}을 찾을 수 없습니다. 올바른 방 이름인지 확인해주세요.`);
+                    throw new ReferenceError(`방 이름 ${room}을 찾을 수 없습니다.`);
                 }
 
                 await fetch('https://sharer.kakao.com/api/talk/message/link', {
