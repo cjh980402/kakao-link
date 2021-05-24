@@ -68,7 +68,7 @@ class KakaoLink {
                 form.append('webview_v', '2');
                 form.append('email', String(AES.encrypt(email, cryptoKey)));
                 form.append('password', String(AES.encrypt(password, cryptoKey)));
-                form.append('continue', decodeURIComponent(this.#referer.split('=')[1]));
+                form.append('continue', decodeURIComponent(this.#referer.split('continue=')[1]));
                 form.append('third', 'false');
                 form.append('k', 'true');
                 const response = await fetch('https://accounts.kakao.com/weblogin/authenticate.json', {
