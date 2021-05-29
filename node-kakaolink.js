@@ -10,10 +10,10 @@ class KakaoLink {
     #kakaoStatic = 'sdk/1.36.6 os/javascript lang/en-US device/Win32 origin/';
 
     constructor(apiKey, location) {
-        if (apiKey.constructor != String || location.constructor != String) {
+        if (apiKey.constructor !== String || location.constructor !== String) {
             throw new TypeError('매개변수의 타입은 String이어야 합니다.');
         }
-        if (apiKey.length != 32) {
+        if (apiKey.length !== 32) {
             throw new ReferenceError('API KEY는 32자여야 합니다.');
         }
         if (!/^http(s)?\:\/\/.+/.test(location)) {
@@ -25,10 +25,10 @@ class KakaoLink {
     }
 
     async login(email, password) {
-        if (email.constructor != String) {
+        if (email.constructor !== String) {
             throw new TypeError('이메일의 타입은 String이어야 합니다.');
         }
-        if (password.constructor != String) {
+        if (password.constructor !== String) {
             throw new TypeError('비밀번호의 타입은 String이어야 합니다.');
         }
         if (!this.#apiKey) {
@@ -151,7 +151,7 @@ class KakaoLink {
                     })
                 ).json();
 
-                const chat = chats?.find((v) => v.title == room);
+                const chat = chats?.find((v) => v.title === room);
                 if (!chat?.id) {
                     throw new ReferenceError(`방 이름 ${room}을 찾을 수 없습니다.`);
                 }
