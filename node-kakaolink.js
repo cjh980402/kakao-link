@@ -60,7 +60,7 @@ class KakaoLink {
                     _kadu: cookies['_kadu'],
                     _kadub: cookies['_kadub'],
                     _maldive_oauth_webapp_session_key: cookies['_maldive_oauth_webapp_session_key'],
-                    TIARA: this.#getCookies(await fetch('https://track.tiara.kakao.com/queen/footsteps'))['TIARA']
+                    TIARA: this.#getCookies(await fetch('https://stat.tiara.kakao.com/track?d=%7B%22sdk%22%3A%7B%22type%22%3A%22WEB%22%2C%22version%22%3A%221.1.15%22%7D%7D'))['TIARA']
                 });
 
                 const form = new FormData();
