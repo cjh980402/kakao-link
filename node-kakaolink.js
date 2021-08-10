@@ -16,7 +16,7 @@ class KakaoLink {
         if (apiKey.length !== 32) {
             throw new ReferenceError('API KEY는 32자여야 합니다.');
         }
-        if (!/^http(s)?\:\/\/.+/.test(location)) {
+        if (!/^https?\:\/\/.+/.test(location)) {
             throw new ReferenceError('도메인 주소의 형식이 올바르지 않습니다.');
         }
 
@@ -35,16 +35,12 @@ class KakaoLink {
             throw new ReferenceError('로그인 메서드를 카카오 SDK가 초기화되기 전에 호출하였습니다.');
         }
 
-        const form = new FormData();
-        form.append('app_key', this.#apiKey);
-        form.append('validation_action', 'default');
-        form.append('validation_params', '{}');
-        form.append('ka', this.#kakaoStatic);
-        form.append('lcba', '');
-        const loginResponse = await fetch('https://sharer.kakao.com/talk/friends/picker/link', {
-            body: form,
-            method: 'POST',
-            headers: { 'User-Agent': this.#kakaoStatic }
+        const loginResponse = await fetch('https://accounts.kakao.com/login?continue=https%3A%2F%2Faccounts.kakao.com%2Fweblogin%2Faccount%2Finfo', {
+            method: 'GET',
+            headers: { 
+                'User-Agent': this.#kakaoStatic,
+                'referer': 'https://accounts.kakao.com'
+            }
         });
 
         switch (loginResponse.status) {
