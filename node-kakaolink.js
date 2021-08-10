@@ -44,8 +44,6 @@ class KakaoLink {
         });
 
         switch (loginResponse.status) {
-            case 401:
-                throw new ReferenceError('유효한 API KEY가 아닙니다.');
             case 200:
                 this.#referer = loginResponse.url;
                 const $ = load(await loginResponse.text());
@@ -94,11 +92,11 @@ class KakaoLink {
                         });
                         break;
                     default:
-                        throw new Error(`로그인 도중 에러가 발생하였습니다.\n${jsonText}`);
+                        throw new Error(`로그인 과정에서 에러가 발생하였습니다.\n${jsonText}`);
                 }
                 break;
             default:
-                throw new Error('API KEY 인증 과정에서 에러가 발생하였습니다.');
+                throw new Error(`로그인을 실패하였습니다. 오류코드: ${loginResponse.status}`);
         }
     }
 
@@ -122,6 +120,8 @@ class KakaoLink {
         switch (response.status) {
             case 400:
                 throw new ReferenceError('템플릿 객체가 올바르지 않거나, Web 플랫폼에 등록된 도메인과 현재 도메인이 일치하지 않습니다.');
+            case 401:
+                throw new ReferenceError('유효한 API KEY가 아닙니다.');
             case 200:
                 const cookies = this.#getCookies(response);
                 Object.assign(this.#cookies, {
