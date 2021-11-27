@@ -21,12 +21,12 @@
     "node-fetch": "^2.6.6"
   },
   "devDependencies": {
-    "prettier": "^2.4.1"
+    "prettier": "^2.5.0"
   },
   "keywords": [
     "kakao",
-    "kakaotalk",
-    "kakaolink"
+    "kakaolink",
+    "kakaotalk"
   ],
   "engines": {
     "node": ">=14.0.0"
