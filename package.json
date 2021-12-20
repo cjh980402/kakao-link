@@ -21,7 +21,7 @@
     "node-fetch": "^2.6.6"
   },
   "devDependencies": {
-    "prettier": "^2.5.0"
+    "prettier": "^2.5.1"
   },
   "keywords": [
     "kakao",
