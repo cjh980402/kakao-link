@@ -13,7 +13,7 @@
   "main": "index.js",
   "scripts": {
     "prepublish": "npm run pretty",
-    "pretty": "prettier --config .prettierrc index.js --write"
+    "pretty": "prettier --config .prettierrc --write index.js"
   },
   "dependencies": {
     "cheerio": "^1.0.0-rc.10",
