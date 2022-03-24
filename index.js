@@ -57,7 +57,7 @@ class KakaoLink {
                     await fetch(
                         'https://stat.tiara.kakao.com/track?d=%7B%22sdk%22%3A%7B%22type%22%3A%22WEB%22%2C%22version%22%3A%221.1.15%22%7D%7D'
                     )
-                )['TIARA'];
+                ).TIARA;
 
                 const form = new FormData();
                 form.append('os', 'web');
@@ -171,15 +171,14 @@ class KakaoLink {
     }
 
     #getCookies(response) {
-        const cookies = {};
-        response.headers
+        return response.headers
             .get('set-cookie')
             .split(',')
-            .forEach((v) => {
-                const [key, val] = v.split(';')[0].split('=');
-                cookies[key.trim()] = val?.trim() ?? '';
-            });
-        return cookies;
+            .reduce((acc, cur) => {
+                const [key, val] = cur.split(';')[0].split('=');
+                acc[key.trim()] = val?.trim() ?? '';
+                return acc;
+            }, {});
     }
 
     #pickCookies(cookies) {
