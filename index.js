@@ -52,17 +52,12 @@ class KakaoLink {
                 const $ = load(await loginResponse.text());
                 const cryptoKey = $('input[name=p]').attr('value');
 
-                const cookies = this.#getCookies(loginResponse);
-                Object.assign(this.#cookies, {
-                    _kadu: cookies['_kadu'],
-                    _kadub: cookies['_kadub'],
-                    _maldive_oauth_webapp_session_key: cookies['_maldive_oauth_webapp_session_key'],
-                    TIARA: this.#getCookies(
-                        await fetch(
-                            'https://stat.tiara.kakao.com/track?d=%7B%22sdk%22%3A%7B%22type%22%3A%22WEB%22%2C%22version%22%3A%221.1.15%22%7D%7D'
-                        )
-                    )['TIARA']
-                });
+                Object.assign(this.#cookies, this.#getCookies(loginResponse));
+                this.#cookies.TIARA = this.#getCookies(
+                    await fetch(
+                        'https://stat.tiara.kakao.com/track?d=%7B%22sdk%22%3A%7B%22type%22%3A%22WEB%22%2C%22version%22%3A%221.1.15%22%7D%7D'
+                    )
+                )['TIARA'];
 
                 const form = new FormData();
                 form.append('os', 'web');
@@ -78,7 +73,7 @@ class KakaoLink {
                     headers: {
                         'User-Agent': this.#kakaoStatic,
                         'Referer': this.#referer,
-                        'Cookie': this.#pickCookies(Object.keys(this.#cookies), this.#cookies)
+                        'Cookie': this.#pickCookies(this.#cookies)
                     }
                 });
 
@@ -90,13 +85,7 @@ class KakaoLink {
                     case -484:
                         throw new ReferenceError(jsonText);
                     case 0:
-                        const cookies = this.#getCookies(response);
-                        Object.assign(this.#cookies, {
-                            _kawlt: cookies['_kawlt'],
-                            _kawltea: cookies['_kawltea'],
-                            _karmt: cookies['_karmt'],
-                            _karmtea: cookies['_karmtea']
-                        });
+                        Object.assign(this.#cookies, this.#getCookies(response));
                         break;
                     default:
                         throw new Error(`로그인 과정에서 에러가 발생하였습니다.\n${jsonText}`);
@@ -120,7 +109,7 @@ class KakaoLink {
             headers: {
                 'User-Agent': this.#kakaoStatic,
                 'Referer': this.#referer,
-                'Cookie': this.#pickCookies(['TIARA', '_kawlt', '_kawltea', '_karmt', '_karmtea'], this.#cookies)
+                'Cookie': this.#pickCookies(this.#cookies)
             }
         });
 
@@ -132,11 +121,7 @@ class KakaoLink {
             case 401:
                 throw new ReferenceError('유효한 API KEY가 아닙니다.');
             case 200:
-                const cookies = this.#getCookies(response);
-                Object.assign(this.#cookies, {
-                    PLAY_SESSION: cookies['PLAY_SESSION'],
-                    using: 'true'
-                });
+                Object.assign(this.#cookies, this.#getCookies(response));
                 const $ = load(await response.text());
                 const validatedTalkLink = $('#validatedTalkLink').attr('value');
                 const csrfToken = $('div').last().attr('ng-init')?.split("'")[1];
@@ -151,7 +136,7 @@ class KakaoLink {
                             'Referer': 'https://sharer.kakao.com/talk/friends/picker/link',
                             'Csrf-Token': csrfToken,
                             'App-Key': this.#apiKey,
-                            'Cookie': this.#pickCookies(Object.keys(this.#cookies), this.#cookies)
+                            'Cookie': this.#pickCookies(this.#cookies)
                         }
                     })
                 ).json();
@@ -176,20 +161,7 @@ class KakaoLink {
                         'Csrf-Token': csrfToken,
                         'App-Key': this.#apiKey,
                         'Content-Type': 'application/json;charset=UTF-8',
-                        'Cookie': this.#pickCookies(
-                            [
-                                'PLAY_SESSION',
-                                'TIARA',
-                                'using',
-                                '_kadu',
-                                '_kadub',
-                                '_kawlt',
-                                '_kawltea',
-                                '_karmt',
-                                '_karmtea'
-                            ],
-                            this.#cookies
-                        )
+                        'Cookie': this.#pickCookies(this.#cookies)
                     }
                 });
                 break;
@@ -210,8 +182,10 @@ class KakaoLink {
         return cookies;
     }
 
-    #pickCookies(keys, cookies) {
-        return keys.map((key) => `${key}=${cookies[key]}`).join('; ');
+    #pickCookies(cookies) {
+        return Object.entries(cookies)
+            .map(([key, val]) => `${key}=${val}`)
+            .join('; ');
     }
 }
 
