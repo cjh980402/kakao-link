@@ -134,7 +134,7 @@ class KakaoLink {
             case 200:
                 const cookies = this.#getCookies(response);
                 Object.assign(this.#cookies, {
-                    KSHARER: cookies['KSHARER'],
+                    PLAY_SESSION: cookies['PLAY_SESSION'],
                     using: 'true'
                 });
                 const $ = load(await response.text());
@@ -178,7 +178,7 @@ class KakaoLink {
                         'Content-Type': 'application/json;charset=UTF-8',
                         'Cookie': this.#pickCookies(
                             [
-                                'KSHARER',
+                                'PLAY_SESSION',
                                 'TIARA',
                                 'using',
                                 '_kadu',
