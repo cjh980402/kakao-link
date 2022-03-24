@@ -1,6 +1,6 @@
 {
   "name": "kakao-link",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Send kakaolink in Node.js.",
   "license": "MIT",
   "author": "cjh980402 <9804cjh@naver.com> (https://github.com/cjh980402)",
@@ -21,7 +21,7 @@
     "node-fetch": "^2.6.7"
   },
   "devDependencies": {
-    "prettier": "^2.5.1"
+    "prettier": "^2.6.0"
   },
   "keywords": [
     "kakao",
