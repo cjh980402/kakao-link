@@ -171,7 +171,7 @@ class KakaoLink {
 
     #getCookies(response) {
         return response.headers
-            .get('set-cookie')
+            .get('Set-Cookie')
             .split(',')
             .reduce((acc, cur) => {
                 const [key, val] = cur.split(';')[0].split('=');
