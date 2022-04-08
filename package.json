@@ -1,6 +1,6 @@
 {
   "name": "kakao-link",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "Send kakaolink in Node.js.",
   "license": "MIT",
   "author": "cjh980402 <9804cjh@naver.com> (https://github.com/cjh980402)",
