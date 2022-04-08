@@ -40,7 +40,7 @@ class KakaoLink {
                 method: 'GET',
                 headers: {
                     'User-Agent': this.#kakaoStatic,
-                    'referer': 'https://accounts.kakao.com'
+                    'Referer': 'https://accounts.kakao.com'
                 }
             }
         );
