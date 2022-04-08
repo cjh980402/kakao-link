@@ -5,6 +5,8 @@
 ## Installing
 `npm install kakao-link`
 
+**Warning:** This package is only supported on `Node 16.5+.` since `2.0.0`. If you use under than Node 16.5+, you should use `1.2.0`.
+
 ## GitHub
 - [GitHub Repository](https://github.com/cjh980402/kakao-link)
 

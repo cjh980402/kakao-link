@@ -1,5 +1,4 @@
-const fetch = require('node-fetch');
-const FormData = require('form-data');
+const { fetch, FormData } = require('undici');
 const { load } = require('cheerio');
 const { AES } = require('./crypto');
 
@@ -60,13 +59,13 @@ class KakaoLink {
                 ).TIARA;
 
                 const form = new FormData();
-                form.append('os', 'web');
-                form.append('webview_v', '2');
-                form.append('email', String(AES.encrypt(email, cryptoKey)));
-                form.append('password', String(AES.encrypt(password, cryptoKey)));
-                form.append('continue', decodeURIComponent(this.#referer.split('continue=')[1]));
-                form.append('third', 'false');
-                form.append('k', 'true');
+                form.set('os', 'web');
+                form.set('webview_v', '2');
+                form.set('email', String(AES.encrypt(email, cryptoKey)));
+                form.set('password', String(AES.encrypt(password, cryptoKey)));
+                form.set('continue', decodeURIComponent(this.#referer.split('continue=')[1]));
+                form.set('third', 'false');
+                form.set('k', 'true');
                 const response = await fetch('https://accounts.kakao.com/weblogin/authenticate.json', {
                     body: form,
                     method: 'POST',
@@ -98,11 +97,11 @@ class KakaoLink {
 
     async send(room, params, type = 'default') {
         const form = new FormData();
-        form.append('app_key', this.#apiKey);
-        form.append('validation_action', type);
-        form.append('validation_params', JSON.stringify(params));
-        form.append('ka', this.#kakaoStatic);
-        form.append('lcba', '');
+        form.set('app_key', this.#apiKey);
+        form.set('validation_action', type);
+        form.set('validation_params', JSON.stringify(params));
+        form.set('ka', this.#kakaoStatic);
+        form.set('lcba', '');
         const response = await fetch('https://sharer.kakao.com/talk/friends/picker/link', {
             body: form,
             method: 'POST',
