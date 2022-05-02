@@ -1,4 +1,4 @@
-const { fetch, FormData } = require('undici');
+const { FormData, request } = require('undici');
 const { load } = require('cheerio');
 const { AES } = require('./crypto');
 
@@ -34,26 +34,27 @@ class KakaoLink {
             throw new ReferenceError('로그인 메서드를 카카오 SDK가 초기화되기 전에 호출하였습니다.');
         }
 
-        const loginResponse = await fetch(
+        const loginResponse = await request(
             'https://accounts.kakao.com/login?continue=https%3A%2F%2Faccounts.kakao.com%2Fweblogin%2Faccount%2Finfo',
             {
                 method: 'GET',
                 headers: {
-                    'User-Agent': this.#kakaoStatic,
-                    'Referer': 'https://accounts.kakao.com'
+                    'user-agent': this.#kakaoStatic,
+                    'referer': 'https://accounts.kakao.com'
                 }
             }
         );
 
-        switch (loginResponse.status) {
+        switch (loginResponse.statusCode) {
             case 200:
-                this.#referer = loginResponse.url;
-                const $ = load(await loginResponse.text());
+                this.#referer =
+                    'https://accounts.kakao.com/login?continue=https%3A%2F%2Faccounts.kakao.com%2Fweblogin%2Faccount%2Finfo';
+                const $ = load(await loginResponse.body.text());
                 const cryptoKey = $('input[name=p]').attr('value');
 
                 Object.assign(this.#cookies, this.#getCookies(loginResponse));
                 this.#cookies.TIARA = this.#getCookies(
-                    await fetch(
+                    await request(
                         'https://stat.tiara.kakao.com/track?d=%7B%22sdk%22%3A%7B%22type%22%3A%22WEB%22%2C%22version%22%3A%221.1.15%22%7D%7D'
                     )
                 ).TIARA;
@@ -66,17 +67,17 @@ class KakaoLink {
                 form.set('continue', decodeURIComponent(this.#referer.split('continue=')[1]));
                 form.set('third', 'false');
                 form.set('k', 'true');
-                const response = await fetch('https://accounts.kakao.com/weblogin/authenticate.json', {
+                const response = await request('https://accounts.kakao.com/weblogin/authenticate.json', {
                     body: form,
                     method: 'POST',
                     headers: {
-                        'User-Agent': this.#kakaoStatic,
-                        'Referer': this.#referer,
-                        'Cookie': this.#pickCookies(this.#cookies)
+                        'user-agent': this.#kakaoStatic,
+                        'referer': this.#referer,
+                        'cookie': this.#pickCookies(this.#cookies)
                     }
                 });
 
-                const jsonText = await response.text();
+                const jsonText = await response.body.text();
                 switch (JSON.parse(jsonText).status) {
                     case -450:
                         throw new ReferenceError('이메일 또는 비밀번호가 올바르지 않습니다.');
@@ -91,7 +92,7 @@ class KakaoLink {
                 }
                 break;
             default:
-                throw new Error(`로그인을 실패하였습니다. 오류코드: ${loginResponse.status}`);
+                throw new Error(`로그인을 실패하였습니다. 오류코드: ${loginResponse.statusCode}`);
         }
     }
 
@@ -102,17 +103,17 @@ class KakaoLink {
         form.set('validation_params', JSON.stringify(params));
         form.set('ka', this.#kakaoStatic);
         form.set('lcba', '');
-        const response = await fetch('https://sharer.kakao.com/talk/friends/picker/link', {
+        const response = await request('https://sharer.kakao.com/talk/friends/picker/link', {
             body: form,
             method: 'POST',
             headers: {
-                'User-Agent': this.#kakaoStatic,
-                'Referer': this.#referer,
-                'Cookie': this.#pickCookies(this.#cookies)
+                'user-agent': this.#kakaoStatic,
+                'referer': this.#referer,
+                'cookie': this.#pickCookies(this.#cookies)
             }
         });
 
-        switch (response.status) {
+        switch (response.statusCode) {
             case 400:
                 throw new ReferenceError(
                     '템플릿 객체가 올바르지 않거나, Web 플랫폼에 등록된 도메인과 현재 도메인이 일치하지 않습니다.'
@@ -121,7 +122,7 @@ class KakaoLink {
                 throw new ReferenceError('유효한 API KEY가 아닙니다.');
             case 200:
                 Object.assign(this.#cookies, this.#getCookies(response));
-                const $ = load(await response.text());
+                const $ = load(await response.body.text());
                 const validatedTalkLink = $('#validatedTalkLink').attr('value');
                 const csrfToken = $('div').last().attr('ng-init')?.split("'")[1];
                 if (!csrfToken) {
@@ -129,23 +130,23 @@ class KakaoLink {
                 }
 
                 const { chats, securityKey } = await (
-                    await fetch('https://sharer.kakao.com/api/talk/chats', {
+                    await request('https://sharer.kakao.com/api/talk/chats', {
                         headers: {
-                            'User-Agent': this.#kakaoStatic,
-                            'Referer': 'https://sharer.kakao.com/talk/friends/picker/link',
+                            'user-agent': this.#kakaoStatic,
+                            'referer': 'https://sharer.kakao.com/talk/friends/picker/link',
+                            'cookie': this.#pickCookies(this.#cookies),
                             'Csrf-Token': csrfToken,
-                            'App-Key': this.#apiKey,
-                            'Cookie': this.#pickCookies(this.#cookies)
+                            'App-Key': this.#apiKey
                         }
                     })
-                ).json();
+                ).body.json();
 
                 const chat = chats?.find((v) => v.title === room);
                 if (!chat?.id) {
                     throw new ReferenceError(`방 이름 ${room}을 찾을 수 없습니다.`);
                 }
 
-                await fetch('https://sharer.kakao.com/api/talk/message/link', {
+                await request('https://sharer.kakao.com/api/talk/message/link', {
                     body: JSON.stringify({
                         receiverChatRoomMemberCount: [1],
                         receiverIds: [chat.id],
@@ -155,12 +156,12 @@ class KakaoLink {
                     }),
                     method: 'POST',
                     headers: {
-                        'User-Agent': this.#kakaoStatic,
-                        'Referer': 'https://sharer.kakao.com/talk/friends/picker/link',
+                        'user-agent': this.#kakaoStatic,
+                        'referer': 'https://sharer.kakao.com/talk/friends/picker/link',
+                        'content-type': 'application/json;charset=UTF-8',
+                        'cookie': this.#pickCookies(this.#cookies),
                         'Csrf-Token': csrfToken,
-                        'App-Key': this.#apiKey,
-                        'Content-Type': 'application/json;charset=UTF-8',
-                        'Cookie': this.#pickCookies(this.#cookies)
+                        'App-Key': this.#apiKey
                     }
                 });
                 break;
@@ -170,14 +171,11 @@ class KakaoLink {
     }
 
     #getCookies(response) {
-        return response.headers
-            .get('Set-Cookie')
-            .split(',')
-            .reduce((acc, cur) => {
-                const [key, val] = cur.split(';')[0].split('=');
-                acc[key.trim()] = val?.trim() ?? '';
-                return acc;
-            }, {});
+        return response.headers['set-cookie'].reduce((acc, cur) => {
+            const [key, val] = cur.split(';')[0].split('=');
+            acc[key.trim()] = val?.trim() ?? '';
+            return acc;
+        }, {});
     }
 
     #pickCookies(cookies) {
