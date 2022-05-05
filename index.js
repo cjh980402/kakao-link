@@ -52,12 +52,12 @@ class KakaoLink {
                 const $ = load(await loginResponse.body.text());
                 const cryptoKey = $('input[name=p]').attr('value');
 
-                Object.assign(this.#cookies, this.#getCookies(loginResponse));
-                this.#cookies.TIARA = this.#getCookies(
+                this.#getCookies(loginResponse);
+                this.#getCookies(
                     await request(
                         'https://stat.tiara.kakao.com/track?d=%7B%22sdk%22%3A%7B%22type%22%3A%22WEB%22%2C%22version%22%3A%221.1.15%22%7D%7D'
                     )
-                ).TIARA;
+                );
 
                 const form = new FormData();
                 form.set('os', 'web');
@@ -73,7 +73,7 @@ class KakaoLink {
                     headers: {
                         'user-agent': this.#kakaoStatic,
                         'referer': this.#referer,
-                        'cookie': this.#pickCookies(this.#cookies)
+                        'cookie': this.#pickCookies()
                     }
                 });
 
@@ -85,7 +85,7 @@ class KakaoLink {
                     case -484:
                         throw new ReferenceError(jsonText);
                     case 0:
-                        Object.assign(this.#cookies, this.#getCookies(response));
+                        this.#getCookies(response);
                         break;
                     default:
                         throw new Error(`로그인 과정에서 에러가 발생하였습니다.\n${jsonText}`);
@@ -109,7 +109,7 @@ class KakaoLink {
             headers: {
                 'user-agent': this.#kakaoStatic,
                 'referer': this.#referer,
-                'cookie': this.#pickCookies(this.#cookies)
+                'cookie': this.#pickCookies()
             }
         });
 
@@ -121,7 +121,7 @@ class KakaoLink {
             case 401:
                 throw new ReferenceError('유효한 API KEY가 아닙니다.');
             case 200:
-                Object.assign(this.#cookies, this.#getCookies(response));
+                this.#getCookies(response);
                 const $ = load(await response.body.text());
                 const validatedTalkLink = $('#validatedTalkLink').attr('value');
                 const csrfToken = $('div').last().attr('ng-init')?.split("'")[1];
@@ -134,7 +134,7 @@ class KakaoLink {
                         headers: {
                             'user-agent': this.#kakaoStatic,
                             'referer': 'https://sharer.kakao.com/talk/friends/picker/link',
-                            'cookie': this.#pickCookies(this.#cookies),
+                            'cookie': this.#pickCookies(),
                             'Csrf-Token': csrfToken,
                             'App-Key': this.#apiKey
                         }
@@ -159,7 +159,7 @@ class KakaoLink {
                         'user-agent': this.#kakaoStatic,
                         'referer': 'https://sharer.kakao.com/talk/friends/picker/link',
                         'content-type': 'application/json;charset=UTF-8',
-                        'cookie': this.#pickCookies(this.#cookies),
+                        'cookie': this.#pickCookies(),
                         'Csrf-Token': csrfToken,
                         'App-Key': this.#apiKey
                     }
@@ -171,15 +171,16 @@ class KakaoLink {
     }
 
     #getCookies(response) {
-        return response.headers['set-cookie'].reduce((acc, cur) => {
+        const cookies = response.headers['set-cookie'].reduce((acc, cur) => {
             const [key, val] = cur.split(';')[0].split('=');
             acc[key.trim()] = val?.trim() ?? '';
             return acc;
         }, {});
+        Object.assign(this.#cookies, cookies);
     }
 
-    #pickCookies(cookies) {
-        return Object.entries(cookies)
+    #pickCookies() {
+        return Object.entries(this.#cookies)
             .map(([key, val]) => `${key}=${val}`)
             .join('; ');
     }
