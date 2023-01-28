@@ -50,7 +50,14 @@ class KakaoLink {
                 this.#referer =
                     'https://accounts.kakao.com/login?continue=https%3A%2F%2Faccounts.kakao.com%2Fweblogin%2Faccount%2Finfo';
                 const $ = load(await loginResponse.body.text());
-                const cryptoKey = $('input[name=p]').attr('value');
+
+                let cryptoKey;
+                const nextData = $('#__NEXT_DATA__').get(0)?.children[0]?.data;
+                if (nextData) {
+                    cryptoKey = JSON.parse(nextData).props.pageProps.pageContext.commonContext.p;
+                } else {
+                    cryptoKey = $('input[name=p]').attr('value');
+                }
 
                 this.#getCookies(loginResponse);
                 this.#getCookies(
@@ -171,7 +178,7 @@ class KakaoLink {
     }
 
     #getCookies(response) {
-        const cookies = response.headers['set-cookie'].reduce((acc, cur) => {
+        const cookies = [response.headers['set-cookie']].flat().reduce((acc, cur) => {
             const [key, val] = cur.split(';')[0].split('=');
             acc[key.trim()] = val?.trim() ?? '';
             return acc;
